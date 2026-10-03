@@ -1,0 +1,32 @@
+stages:
+  - id: intake
+    title: Intake
+    template: intake.md
+    gate: none
+    instructions: |
+      Read the whole ticket, every comment included, before you write anything.
+      State the ask in one or two sentences.
+      Quote the report. Do not interpret it here.
+      Summarise earlier answers and name their authors.
+      Give Scope as exact ids and UTC time windows, or write "unknown".
+      If the reporter offers a comparison (before/after, working/failing), note it. A later stage must measure it.
+      Production is read-only. Do not write to the ticket system.
+    exit_criteria:
+      - The ask is stated in one or two sentences.
+      - The report is quoted, not paraphrased.
+      - Earlier answers are listed with their authors.
+      - Scope has exact ids and UTC windows, or says "unknown".
+      - Any comparison the reporter offers is noted.
+  - id: learn
+    title: Learn
+    template: learn.md
+    gate: none
+    instructions: |
+      Capture what you found where you found it.
+      Update or add a KB page, and link it from kb/README.md. Run `node kit.js check`.
+      If no page needs to change, write "none" and say why.
+      Write follow-ups as drafts in this file. Never create tickets or wiki pages yourself.
+      When the KB and the code disagree, the code wins and the page gets fixed.
+    exit_criteria:
+      - A KB page changed and is linked from the index, or the section says "none" with a reason.
+      - Follow-ups are drafts, not tickets.

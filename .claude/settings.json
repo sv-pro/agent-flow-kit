@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "ask": [
+      "Bash(node kit.js task review *)",
+      "Bash(node kit.js task skip *)",
+      "Bash(node kit.js task wait *)"
+    ]
+  }
+}

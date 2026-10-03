@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>agent-flow-kit</title>
+<style>
+  body { font: 15px/1.5 system-ui, sans-serif; margin: 0; display: flex; height: 100vh; }
+  nav { width: 300px; border-right: 1px solid #ccc; padding: 12px; overflow: auto; }
+  main { flex: 1; padding: 16px 24px; overflow: auto; }
+  nav button.task { display: block; width: 100%; text-align: left; margin: 2px 0; padding: 6px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+  nav button.task.sel { background: #eef; }
+  .state { font-size: 12px; color: #555; }
+  .actions button { margin: 4px 4px 4px 0; }
+  table { border-collapse: collapse; } td, th { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
+  tr.inferred td { background: #fff3b0; } tr.measured td { background: #e4f6e4; } tr.decision td { background: #e4eefc; }
+  pre { background: #f4f4f4; padding: 8px; overflow: auto; }
+  .err { color: #b00020; } .reject { background: #fde4e4; padding: 6px 10px; }
+  details { margin: 8px 0; } summary { cursor: pointer; font-weight: 600; }
+  input, textarea { width: 100%; box-sizing: border-box; margin: 2px 0 8px; }
+</style>
+</head>
+<body>
+<nav>
+  <h3>Tasks</h3>
+  <div id="list"></div>
+  <details><summary>New task</summary>
+    <input id="n-key" placeholder="KEY (PROJ-123 or slug)">
+    <input id="n-title" placeholder="Title">
+    <select id="n-type"></select>
+    <input id="n-repos" placeholder="repos, comma separated">
+    <input id="n-from" placeholder="from KEY (optional)">
+    <button id="n-go">Create</button>
+  </details>
+</nav>
+<main id="main"><p>Select a task.</p></main>
+<script>
+const $ = (id) => document.getElementById(id);
+let current = null;
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+async function api(method, url, body) {
+  const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+const act = async (action, body = {}) => {
+  try { const r = await api('POST', `/api/tasks/${current}/${action}`, body); if (r.outcome === 'refused') alert('Not ready:\n' + r.problems.join('\n')); }
+  catch (e) { alert(e.message); }
+  await refresh();
+};
+const ask = (label) => prompt(label) || '';
+
+async function refresh() {
+  const tasks = await api('GET', '/api/tasks');
+  $('list').innerHTML = tasks.map((t) => `<button class="task ${t.key === current ? 'sel' : ''}" data-key="${esc(t.key)}"><b>${esc(t.key)}</b> ${esc(t.title)}<br><span class="state">${esc(t.type)} / ${esc(t.stage)} / ${esc(t.state)}</span></button>`).join('') || '<p>No tasks.</p>';
+  document.querySelectorAll('button.task').forEach((b) => b.onclick = () => { current = b.dataset.key; refresh(); });
+  if (!current) return;
+  const s = await api('GET', `/api/tasks/${encodeURIComponent(current)}`);
+  const buttons = [['next', 'Run next']];
+  if (s.state === 'awaiting-review') buttons.push(['approve', 'Approve'], ['reject', 'Reject']);
+  if (s.state === 'waiting') buttons.push(['resume', 'Resume']);
+  if (s.state !== 'done') buttons.push(['wait', 'Wait'], ['skip', 'Skip stage']);
+  const meets = s.unmet.map((u) => `<button data-meet="${esc(u.id)}">Meet ${esc(u.id)}</button>`).join('');
+  $('main').innerHTML = `
+    <h2>${esc(s.key)}: ${esc(s.title)}</h2>
+    <p>${esc(s.type)} &middot; stage ${s.stage.position}/${s.stage.total} <b>${esc(s.stage.id)}</b> &middot; state <b>${esc(s.state)}</b> &middot; gate ${esc(s.stage.gate)}${s.from ? ' &middot; from ' + esc(s.from) : ''}</p>
+    ${s.rejection ? `<p class="reject"><b>Rejected:</b> ${esc(s.rejection)}</p>` : ''}
+    ${s.waitingOn ? `<p>Waiting on: ${esc(s.waitingOn)}</p>` : ''}
+    ${s.unmet.length ? `<p><b>Unmet:</b> ${s.unmet.map((u) => esc(u.id + ': ' + u.text)).join('; ')}</p>` : ''}
+    <div class="actions">${buttons.map(([a, l]) => `<button data-act="${a}">${l}</button>`).join('')}${meets}</div>
+    <details><summary>Instructions and exit criteria</summary><pre>${esc(s.stage.instructions)}</pre><ul>${s.stage.exit_criteria.map((c) => `<li>${esc(c)}</li>`).join('')}</ul></details>
+    <details><summary>Repos</summary><ul>${s.repos.map((r) => `<li>${esc(r.name)} (${esc(r.owner)}): ${r.cloned ? esc(r.path) + ' on ' + esc(r.branch) : 'not cloned'}</li>`).join('')}</ul></details>
+    ${s.outputs.filter((o) => o.exists).map((o) => `<details ${o.current ? 'open' : ''}><summary>${esc(o.file)}</summary>${o.html}</details>`).join('')}`;
+  document.querySelectorAll('[data-act]').forEach((b) => b.onclick = () => {
+    const a = b.dataset.act;
+    if (a === 'reject') act(a, { note: ask('Rejection note') });
+    else if (a === 'approve') act(a, { note: ask('Note (optional)') });
+    else if (a === 'wait') act(a, { on: ask('Waiting on') });
+    else if (a === 'skip') act(a, { reason: ask('Reason for skipping') });
+    else act(a);
+  });
+  document.querySelectorAll('[data-meet]').forEach((b) => b.onclick = () => act('meet', { requirement: b.dataset.meet, evidence: ask('Evidence (link, id or command output)') }));
+}
+
+$('n-go').onclick = async () => {
+  try {
+    const repos = $('n-repos').value.split(',').map((x) => x.trim()).filter(Boolean);
+    const t = await api('POST', '/api/tasks', { key: $('n-key').value.trim(), title: $('n-title').value.trim(), type: $('n-type').value, repos, from: $('n-from').value.trim() });
+    current = t.key;
+  } catch (e) { alert(e.message); }
+  await refresh();
+};
+(async () => {
+  const types = await api('GET', '/api/types');
+  $('n-type').innerHTML = types.map((t) => `<option>${esc(t)}</option>`).join('');
+  await refresh();
+})();
+</script>
+</body>
+</html>

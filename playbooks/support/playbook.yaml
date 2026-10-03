@@ -1,0 +1,41 @@
+id: support
+title: Support
+summary: Investigate a support question with production data, then draft the reply for the support engineer.
+stages:
+  - use: intake
+  - id: investigate
+    title: Investigate
+    template: investigate.md
+    gate: review
+    claims: true
+    requires:
+      - id: data-access
+        text: Read-only access to the production data is set up (VPN up, read-only credential). Say how you checked it as evidence.
+    instructions: |
+      Production is read-only. Run only queries that read.
+      Check out and pull the branch the environment runs before you read code.
+      Every claim is measured (with an anchor someone else can re-run), inferred, or a decision.
+      A status code is not a cause. One sample is not a rule.
+      "I could not find it" is not "it does not exist": say where you looked and how.
+      Measure the comparison the ticket offers.
+      When the evidence cannot settle it, write "unknown" and name the test that would.
+      Other teams' repos are read-only: state the gap and the evidence, never their fix or their owner.
+      Then run `task next` and stop for review.
+    exit_criteria:
+      - The findings answer the ask, or say "unknown" and name the test that would.
+      - The claims table has a kind for every row and an anchor for every measured row.
+  - id: answer
+    title: Answer
+    template: answer.md
+    gate: review
+    instructions: |
+      Write a reply draft for the support engineer. The agent never posts it.
+      Lead with the answer. Use plain words and short sentences.
+      Do not state anything the investigation did not establish. Mark open points.
+    exit_criteria:
+      - The draft answers the ask in plain words.
+      - Every statement in it traces to the investigation.
+  - use: learn
+    requires:
+      - id: reply-posted
+        text: The support engineer posted the reply. Give a link or the posting time as evidence.
