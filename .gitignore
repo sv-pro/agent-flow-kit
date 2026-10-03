@@ -1,0 +1,4 @@
+repos/
+node_modules/
+.claude/settings.local.json
+tools/**/.env

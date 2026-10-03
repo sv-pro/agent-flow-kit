@@ -1,0 +1,17 @@
+{
+  "name": "agent-flow-kit",
+  "version": "0.1.0",
+  "description": "Playbook-driven task kit for AI-assisted dev and support work",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node kit.js check"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1"
+  }
+}
