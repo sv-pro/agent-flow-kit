@@ -265,6 +265,7 @@ test('check passes on the shipped kit', () => {
 
 test('check: unlinked KB page', () => {
   const kit = tempKit();
+  fs.mkdirSync(path.join(kit.root, 'kb/runbooks'), { recursive: true });
   fs.writeFileSync(path.join(kit.root, 'kb/runbooks/x.md'), '---\nkb_id: x\ntitle: X\nstatus: draft\nlast_reviewed: 2026-01-01\nsource_anchors: []\n---\n# X\n');
   const { errors } = kit.check();
   assert.ok(errors.some((e) => /kb\/runbooks\/x\.md: KB page is not linked/.test(e)), errors.join('\n'));
@@ -272,6 +273,7 @@ test('check: unlinked KB page', () => {
 
 test('check: bad KB front matter', () => {
   const kit = tempKit();
+  fs.mkdirSync(path.join(kit.root, 'kb/runbooks'), { recursive: true });
   fs.appendFileSync(path.join(kit.root, 'kb/README.md'), '\n- [Bad](runbooks/bad.md)\n- [Plain](runbooks/plain.md)\n');
   fs.writeFileSync(path.join(kit.root, 'kb/runbooks/bad.md'), '---\nkb_id: bad\ntitle: Bad\nstatus: maybe\nlast_reviewed: yesterday\nsource_anchors: [nocolon]\n---\n# Bad\n');
   fs.writeFileSync(path.join(kit.root, 'kb/runbooks/plain.md'), '# No front matter\n');
