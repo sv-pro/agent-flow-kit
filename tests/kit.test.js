@@ -275,6 +275,7 @@ test('check: bad KB front matter', () => {
   const kit = tempKit();
   fs.mkdirSync(path.join(kit.root, 'kb/runbooks'), { recursive: true });
   fs.appendFileSync(path.join(kit.root, 'kb/README.md'), '\n- [Bad](runbooks/bad.md)\n- [Plain](runbooks/plain.md)\n');
+  fs.mkdirSync(path.join(kit.root, 'kb/runbooks'), { recursive: true });
   fs.writeFileSync(path.join(kit.root, 'kb/runbooks/bad.md'), '---\nkb_id: bad\ntitle: Bad\nstatus: maybe\nlast_reviewed: yesterday\nsource_anchors: [nocolon]\n---\n# Bad\n');
   fs.writeFileSync(path.join(kit.root, 'kb/runbooks/plain.md'), '# No front matter\n');
   const { errors } = kit.check();
