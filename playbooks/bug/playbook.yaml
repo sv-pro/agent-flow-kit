@@ -1,0 +1,77 @@
+id: bug
+title: Bug
+summary: Reproduce a defect, find its root cause, fix it, review the change, and verify it.
+stages:
+  - use: intake
+  - id: reproduce
+    title: Reproduce
+    template: reproduce.md
+    gate: none
+    instructions: |
+      Check out and pull the branch the environment runs before you read any code (`node kit.js repos where`, then `git pull` in that repo).
+      Reproduce the failure with exact steps, ids and UTC times.
+      A claimed defect needs a failing test or a reproduced trace. A reading of the code is not enough.
+      If you cannot reproduce it, say so and say what you tried. "I could not reproduce it" is not "it does not happen".
+      Production is read-only.
+    exit_criteria:
+      - The branch and commit under test are named.
+      - The steps can be re-run by someone else.
+      - The result is a failing test or a trace, or an honest "not reproduced" with what was tried.
+  - id: root-cause
+    title: Root cause
+    template: root-cause.md
+    gate: review
+    claims: true
+    instructions: |
+      Explain why it fails, not only where.
+      Every claim is measured (with an anchor someone else can re-run), inferred, or a decision.
+      A status code is not a cause. One sample is not a rule.
+      Check reachability before you call a state a bug.
+      "I could not find it" is not "it does not exist". Search each repo by its absolute path.
+      Measure the comparison the ticket offers.
+      When the evidence cannot settle a point, write "unknown" and name the test that would.
+      Other teams' repos are read-only: state the gap and the evidence, never their fix or their owner.
+      Then run `task next` and stop for review.
+    exit_criteria:
+      - The symptom and the root cause are separate statements.
+      - The claims table has a kind for every row and an anchor for every measured row.
+      - Open points are "unknown" with the test that would settle them.
+  - id: fix
+    title: Fix
+    template: fix.md
+    gate: none
+    instructions: |
+      Make the smallest change that fixes the root cause. Add a test that fails before the change and passes after.
+      Code comments are 1-3 lines. Reasoning goes in the commit message. Never reference the kit from product code.
+      Do not commit, push or open a PR unless the human asks in this conversation.
+    exit_criteria:
+      - The change and the test are described.
+      - The test failed before the change and passes after it.
+  - id: code-review
+    title: Code review
+    template: code-review.md
+    gate: review
+    required_sections: [Round 1, Outcome]
+    instructions: |
+      Review in rounds. Each round covers: the diff, the surrounding blocks, the callers, and any code the change makes unreachable.
+      Add a "Round N" section for each round and list what it found.
+      Stop when a round finds nothing new. After three rounds that each found something, stop and escalate in Outcome.
+      Fix what a round finds before the next round.
+    exit_criteria:
+      - Each round lists what it checked and what it found.
+      - Outcome says "converged" (a round found nothing new) or "escalated" (three busy rounds).
+  - id: verify
+    title: Verify
+    template: verify.md
+    gate: review
+    requires:
+      - id: pr-opened
+        text: A pull request for the fix is open. Give its link as evidence.
+    instructions: |
+      Run the checks on the pull request branch: the new test, the existing suite, and the original reproduction steps.
+      Re-measure the comparison the ticket offers, if it offered one.
+      Record each check with its result. If something fails, say so; do not move on.
+    exit_criteria:
+      - The reproduction from the reproduce stage now passes.
+      - The test suite result is recorded.
+  - use: learn

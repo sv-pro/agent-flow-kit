@@ -1,0 +1,11 @@
+# Product repos. Fill in one entry per repo, then run: node kit.js repos clone
+# owner is "ours" or the name of another team. Other teams' repos are read-only.
+# branch is the production branch.
+#
+# repos:
+#   - name: example-service
+#     url: git@example.com:team/example-service.git
+#     owner: ours
+#     purpose: One line on what the repo does.
+#     branch: main
+repos: []
