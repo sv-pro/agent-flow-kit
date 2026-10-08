@@ -11,7 +11,7 @@ Put the process in files and enforce it with one small CLI. Playbooks define sta
 ## Principles
 
 1. The process lives in files. Agents follow what the CLI prints, never their own habits.
-2. Humans own decisions. An agent does a stage's work and stops for review. It never approves, skips or parks a task.
+2. Humans own decisions. An agent must do a stage's work and stop for review; it must not approve, skip or park a task. This is an instruction-only rule in the current implementation, not authenticated authorization (see [SECURITY.md](SECURITY.md)).
 3. Every claim says how it is known: measured (with an anchor someone else can re-run), inferred, or decision. The CLI validates this.
 4. Knowledge is captured where it is found. Every playbook ends with a learn stage that updates the KB.
 5. No platform. Files, git and one Node script. No server, no database, one runtime dependency (`yaml`).
@@ -30,13 +30,13 @@ Put the process in files and enforce it with one small CLI. Playbooks define sta
 | F6 | `check`: playbooks, tasks, KB front matter, index links, relative links, personal paths | built |
 | F7 | `doctor` with a fix for each failure | built |
 | F8 | One rules file plus pointers for Claude Code and Copilot, `/task` loop | built |
-| F9 | Permission rules that ask before review, skip and wait (Claude Code) | built |
+| F9 | Permission rules requesting approval for matching review, skip and wait commands (Claude Code only) | configuration shipped; not a cross-assistant boundary |
 | F10 | Local web UI over the same actions, `via: ui` recorded | built |
-| F11 | `watch`: wakes on a person's decision | built |
+| F11 | `watch`: wakes on matching decision/UI events; caller is not authenticated | built |
 | F12 | Seed KB and CI | built |
 | F13 | Runner that executes playbooks without an assistant | planned |
 | F14 | Ticket and wiki drafts published by a human-approved step | planned |
-| F15 | Stronger guard for human decisions (signed approvals) | planned |
+| F15 | Human authorization with an independent trust anchor and protected state writer | planned; Q1-Q3 remain open |
 | F16 | Task dashboard across many tasks and repos | planned |
 
 ## Roadmap
@@ -69,7 +69,7 @@ The task moves to `reproduce`. Fill in `02-reproduce.md` and run `next` again. A
 | The export drops empty rows | measured | |
 ```
 
-`next` rejects it: a measured row needs an anchor. Add an anchor (a command or test) and run `next` again. The task stops for review (`awaiting-review`). The agent does not continue. As the human:
+`next` rejects it: a measured row needs an anchor. Add an anchor (a command or test) and run `next` again. The task stops for review (`awaiting-review`). The agent is instructed not to continue; the review command itself does not authenticate its caller. As the human:
 
 ```
 node kit.js task review demo-bug reject --note "Show the failing test in the anchor"

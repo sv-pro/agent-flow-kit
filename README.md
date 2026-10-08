@@ -1,6 +1,6 @@
 # agent-flow-kit
 
-A process kit for AI-assisted dev and support work. Any coding assistant (Claude Code, GitHub Copilot, others) works a task the same way, because the process lives in files and one CLI enforces it.
+A process kit for AI-assisted dev and support work. Coding assistants (Claude Code, GitHub Copilot, others) share instructions and playbooks; one CLI validates task transitions and output structure.
 
 The repo holds no product code. It holds:
 
@@ -10,6 +10,12 @@ The repo holds no product code. It holds:
 - `kit.js`: a single Node script that validates all three.
 
 No server, no database. One runtime dependency (`yaml`). Git is the audit trail. Concept and demo: [CONCEPT.md](CONCEPT.md).
+
+**Human decisions are instruction-only controls, not authenticated approvals.**
+Any process with CLI access can run `task review`, `task skip` or `task wait`.
+Claude Code's `ask` settings do not protect Copilot or other assistants. Git
+identity and `via: ui` do not prove a human acted. See [SECURITY.md](SECURITY.md)
+for enforced guarantees, the reproducible test and the required trust boundary.
 
 ## Getting started
 
@@ -63,6 +69,10 @@ Run `node kit.js help`. The list is also in [AGENTS.md](AGENTS.md).
 npm test
 node kit.js check
 ```
+
+Reproduce the known human-gate authorization gap in disposable tasks:
+`node --test tests/human-gate.test.js`. Passing cases document the open gap;
+they do not mean human authorization is enforced.
 
 ## Roadmap
 

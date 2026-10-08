@@ -178,6 +178,7 @@ export function parseArgs(argv) {
 }
 
 export function isPersonEvent(ev) {
+  // Workflow convention only: neither the event type nor via authenticates a person.
   return PERSON_EVENTS.has(ev.event) || ev.via === 'ui';
 }
 
@@ -199,7 +200,7 @@ export class Kit {
     this.user = opts.user;
   }
 
-  // ----- identity -----
+  // ----- unverified attribution (not authentication; see SECURITY.md) -----
   gitUser() {
     if (this.user) return this.user;
     try {
@@ -435,6 +436,7 @@ export class Kit {
   }
 
   review(key, decision, note) {
+    // Validates workflow state, not human identity/authorization (SECURITY.md).
     if (!['approve', 'reject'].includes(decision)) throw new KitError('review decision must be approve or reject');
     const t = this.loadTask(key);
     const { pb } = this.current(t);

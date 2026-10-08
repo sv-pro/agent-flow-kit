@@ -2,9 +2,14 @@
 
 Known gaps and undecided points. IDs are stable; do not renumber.
 
+Q1-Q3 remain unresolved. The unattended CLI reproduction and the distinction
+between workflow checks and human authorization are in [SECURITY.md](SECURITY.md).
+Run `node --test tests/human-gate.test.js` to reproduce the state/history changes
+on disposable tasks; passing tests characterize the gap, not its closure.
+
 | ID | Question | Status |
 |----|----------|--------|
-| Q1 | The `ask` permission rules in `.claude/settings.json` cover Claude Code only. Copilot and other assistants can still run `task review`, `task skip` and `task wait`. The rule in AGENTS.md is an honour system there. Is a stronger guard needed (for example a signed approval)? | open |
+| Q1 | The `ask` permission rules in `.claude/settings.json` apply only to matching commands mediated by Claude Code. CLI/API/Kit methods do not authenticate callers. Programmatic review, skip and wait change state/history without human interaction. Human authorization needs an independent trust anchor and protected state writer. | open; reproduced 2026-10-08 |
 | Q2 | `via: ui` is recorded by the UI process. An agent can call the UI API or edit `task.yaml` directly. Git history shows it, but nothing blocks it. | open |
 | Q3 | `by` is the git user name. It is not authenticated. | open |
 | Q4 | `task wait` does not remember the state it left (for example `awaiting-review`). `resume` returns to `in-progress`, or `blocked` if a requirement is unmet. | open |

@@ -13,7 +13,9 @@ Follow what the CLI prints, not your own habits.
 1. `node kit.js task status <KEY>`: the stage, its instructions, exit criteria, output file and repos.
 2. Do the stage's work. Stay inside the stage. Write the result in the output file the status names.
 3. `node kit.js task next <KEY>`: it validates the output and lists every problem at once. Fix them and run it again.
-4. Reviews, skips and waits belong to the human. Never run `task review`, `task skip` or `task wait`. When a stage needs review, stop and say so. After you ask for a review, you may run `node kit.js watch <KEY>` in the background; it exits when a person acts.
+4. Reviews, skips and waits belong to the human. Never run `task review`, `task skip` or `task wait`. When a stage needs review, stop and say so. After you ask for a review, you may run `node kit.js watch <KEY>` in the background; it exits on a matching decision/UI event, which does not authenticate a person.
+
+These human-only rules are instructions to assistants. The CLI does not authenticate callers; Claude Code's `ask` rules do not cover Copilot or other assistants. Do not treat Git identity, `via: ui` or a watcher event as proof of human approval. See [SECURITY.md](SECURITY.md) for the enforced checks and open authorization gap.
 
 If the status shows a rejection note, handle it first. A blocked task needs a requirement met with real evidence (`task meet`), or ask the human for the link.
 

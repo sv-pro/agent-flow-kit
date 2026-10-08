@@ -43,6 +43,11 @@ Type `/task PROJ-123`. The assistant reads `task status`, does the stage, and ru
 
 ## 6. Review (10 minutes)
 
+Review commands and the UI do not authenticate a human. Claude Code's matching
+`ask` rules are host-specific; Copilot and other assistants have only the
+instructions in AGENTS.md. Git names and `via: ui` are unverified labels. Read
+[SECURITY.md](SECURITY.md) before relying on a review gate as an access control.
+
 At a review stop, read the output file. Inferred claims are the first thing to question. Then decide:
 
 ```
